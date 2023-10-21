@@ -25,11 +25,28 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
-
-    const productCollections = client.db('productsDB').collection('products');
+    const productsDB = client.db('productsDB')
+    const productCollections = productsDB.collection('products');
+    const myCartProductsCollections = productsDB.collection('cartProducts');
+    const customerReviews = productsDB.collection('CustomerReview');
     
     app.get('/products', async(req, res) => {
         const cursor = productCollections.find();
+        const result = await cursor.toArray();
+        res.send(result);
+        console.log(result);
+    })
+
+    // cart products
+    app.get('/cartProducts', async(req, res) => {
+        const cursor = myCartProductsCollections.find();
+        const result = await cursor.toArray();
+        res.send(result);
+        console.log(result);
+    })
+    // customer reviews
+    app.get('/customerReviews', async(req, res) => {
+        const cursor = customerReviews.find();
         const result = await cursor.toArray();
         res.send(result);
         console.log(result);
@@ -50,6 +67,21 @@ async function run() {
         const result = await productCollections.insertOne(newProduct);
         res.send(result);
     })
+
+    app.post('/cartProducts', async(req, res) => {
+        const newCartProduct = req.body;
+        console.log(newCartProduct);
+        const result = await myCartProductsCollections.insertOne(newCartProduct);
+        res.send(result);
+    })
+    // delete product from cartProduct
+    app.delete('/cartProducts/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await myCartProductsCollections.deleteOne(query);
+      res.send(result);
+  })
+    
     // update productc
 
     app.put('/products/:id', async(req, res) => {
@@ -61,11 +93,11 @@ async function run() {
       const product = {
           $set: {
               name: updatedProduct.name, 
-              quantity: updatedProduct.quantity, 
-              supplier: updatedProduct.supplier, 
-              taste: updatedProduct.taste, 
-              category: updatedProduct.category, 
-              details: updatedProduct.details, 
+              brandName: updatedProduct.brandName, 
+              cetegory: updatedProduct.cetegory, 
+              price: updatedProduct.price, 
+              shortDescription: updatedProduct.shortDescription, 
+              rating: updatedProduct.rating, 
               photo: updatedProduct.photo
           }
       }
